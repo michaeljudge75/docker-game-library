@@ -1,0 +1,53 @@
+@font-face{
+	font-family: Atari; src: url('sf-atarian-system/Atarian/SF-Atarian-System.ttf'); 
+}
+body {
+	color: white;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	height: 100vh;
+	
+	background-image: url('retroBackground.jpeg');
+    background-size: cover;
+
+}
+h1{
+	font-size: 75px;
+	font-family: Atari;
+	color: #6464de;
+	text-shadow: 1px 1px 3px #ffffff
+}
+li{
+	font-size: 45px;
+	font-family: Atari;
+	color: #6464de;
+	text-shadow: 1px 1px 3px #ffffff
+}
+.links{
+	position: fixed;     
+    text-align: right;    
+	bottom: 0px; 
+	width: 100%;
+	font-size: 15px;
+}
+a:link {
+  color: white;
+  background-color: transparent;
+  text-decoration: none;
+}
+
+a:visited {
+  color: yellow;
+  background-color: transparent;
+  text-decoration: none;
+}
+
+a:hover {
+  color: red;
+  background-color: transparent;
+  text-decoration: underline;
+}
+
+	
