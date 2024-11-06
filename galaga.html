@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galaga Game</title>
+    <style>
+		@font-face{
+			font-family: Atari; src: url('sf-atarian-system/Atarian/SF-Atarian-System.ttf'); 
+		}
+        body {
+            margin: 0;
+            background-image: url('retroBackground.jpeg'); /* Path to your background image */
+            background-size: cover;   /* Make the background cover the whole page */
+            background-position: center; /* Center the background image */
+            background-repeat: no-repeat; /* Prevent the background from repeating */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;  /* Stack content vertically */
+            height: 100vh;
+            overflow: hidden;
+            text-align: center;  /* Center align the text */
+        }
+
+        canvas {
+            border: 2px solid white;
+			background-color: black;
+        }
+
+        /* Styling for the text header */
+        .game-header {
+			font-size: 75px;
+            font-family: Atari;
+			color: #6464de;
+			text-shadow: 1px 1px 3px #ffffff;
+            margin-bottom: 20px; /* Space between the text and canvas */
+        }
+
+        /* Game over and win messages */
+        .game-over, .you-win {
+			font-size: 100px;
+            position: absolute;
+            font-family: Atari;
+			color: #6464de;
+			text-shadow: 1px 1px 3px #ffffff;
+            text-align: center;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+        }
+
+        /* Scoreboard in top-left corner */
+        .score-board {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-size: 50px;
+			font-family: Atari;
+			color: #6464de;
+			text-shadow: 1px 1px 3px #ffffff;
+        }
+
+        /* Keybinds area on the right side of the game */
+        .keybinds {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            font-family: Atari;
+			color: #6464de;
+			text-shadow: 1px 1px 3px #ffffff;
+            font-size: 25px;
+            text-align: left;
+            //background: rgba(0, 0, 0, 0.7);  /* Semi-transparent background */
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        /* Home button in the bottom-right corner */
+        .home-button {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .home-button:hover {
+            color: lightblue;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Text header above the game -->
+    <div class="game-header">
+        Galaga Game - Shoot the Enemies!
+    </div>
+
+    <!-- Keybinds section on the right side -->
+    <div class="keybinds">
+        <strong>Keybinds:</strong><br>
+        <strong>Move Left:</strong> A or Left Arrow<br>
+        <strong>Move Right:</strong> D or Right Arrow<br>
+        <strong>Shoot:</strong> Spacebar<br>
+        <strong>Restart Game:</strong> R (after Game Over)<br>
+		<strong>Get 500 Points to WIN!</strong>
+    </div>
+
+    <!-- Scoreboard and Canvas -->
+    <div class="score-board">Score: 0</div>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+    <!-- Game Over and Win Messages -->
+    <div class="game-over">Game Over - Press "R" to Restart</div>
+    <div class="you-win">You Win! Press "R" to Restart</div>
+
+    <!-- Home button in bottom right -->
+    <div class="home-button" onclick="window.location.href='main.html'">Home</div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let player, bullets, enemies, enemySpeed, score, gameOver, gameWon, gameInterval;
+
+        // Load the player and enemy images
+        const playerImage = new Image();
+        const enemyImage = new Image();
+        playerImage.src = 'player.png';  // Replace with your player image path
+        enemyImage.src = 'enemy.png';    // Replace with your enemy image path
+
+        // Event Listeners for movement and restart
+        document.addEventListener('keydown', keyDownHandler, false);
+        document.addEventListener('keyup', keyUpHandler, false);
+
+        // Keydown Handler
+        function keyDownHandler(e) {
+            if (e.key === 'ArrowRight' || e.key === 'd') {
+                player.dx = player.speed;
+            } else if (e.key === 'ArrowLeft' || e.key === 'a') {
+                player.dx = -player.speed;
+            } else if (e.key === ' ' && !gameOver && !gameWon) {
+                fireBullet();
+            } else if (e.key === 'r' && (gameOver || gameWon)) {
+                restartGame();
+            }
+        }
+
+        // Keyup Handler
+        function keyUpHandler(e) {
+            if (e.key === 'ArrowRight' || e.key === 'ArrowLeft' || e.key === 'd' || e.key === 'a') {
+                player.dx = 0;
+            }
+        }
+
+        // Initialize Game State
+        function initGame() {
+            player = {
+                x: canvas.width / 2 - 20,
+                y: canvas.height - 60,
+                width: 40,
+                height: 40,
+                speed: 5,
+                dx: 0
+            };
+
+            bullets = [];
+            enemies = [];
+            enemySpeed = 1;  // Set this to a lower value for slower movement (e.g., 1 or 0.5)
+            score = 0;
+            gameOver = false;
+            gameWon = false;
+
+            // Hide the game over and win messages
+            document.querySelector('.game-over').style.display = 'none';
+            document.querySelector('.you-win').style.display = 'none';
+            document.querySelector('.score-board').textContent = 'Score: 0';
+
+            // Create initial enemy and start game loop
+            createEnemy();
+            gameInterval = setInterval(createEnemy, 1000);  // Create new enemies every second
+            gameLoop();
+        }
+
+        // Create Enemy
+        function createEnemy() {
+            let x = Math.random() * (canvas.width - 40);
+            let y = Math.random() * 200 - 200;
+            enemies.push({ x, y, width: 40, height: 40 });
+        }
+
+        // Draw the Player (using image)
+        function drawPlayer() {
+            ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
+        }
+
+        // Draw Bullets
+        function drawBullets() {
+            ctx.fillStyle = "yellow";
+            for (let i = 0; i < bullets.length; i++) {
+                let bullet = bullets[i];
+                ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+            }
+        }
+
+        // Move Player
+        function movePlayer() {
+            player.x += player.dx;
+
+            if (player.x < 0) player.x = 0;
+            if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
+        }
+
+        // Fire Bullet
+        function fireBullet() {
+            bullets.push({ x: player.x + player.width / 2 - 2, y: player.y, width: 4, height: 10 });
+        }
+
+        // Move Bullets
+        function moveBullets() {
+            for (let i = 0; i < bullets.length; i++) {
+                let bullet = bullets[i];
+                bullet.y -= 5;
+
+                // Remove bullet if it goes off screen
+                if (bullet.y < 0) {
+                    bullets.splice(i, 1);
+                    i--;
+                }
+            }
+        }
+
+        // Draw Enemies (using image)
+        function drawEnemies() {
+            for (let i = 0; i < enemies.length; i++) {
+                let enemy = enemies[i];
+                ctx.drawImage(enemyImage, enemy.x, enemy.y, enemy.width, enemy.height);
+            }
+        }
+
+        // Move Enemies
+        function moveEnemies() {
+            for (let i = 0; i < enemies.length; i++) {
+                let enemy = enemies[i];
+                enemy.y += enemySpeed;
+
+                // Game Over if enemy reaches the bottom
+                if (enemy.y + enemy.height > canvas.height) {
+                    gameOver = true;
+                    document.querySelector('.game-over').style.display = 'block';
+                    clearInterval(gameInterval); // Stop creating new enemies
+                }
+            }
+        }
+
+        // Check Bullet Collision with Enemies
+        function checkCollisions() {
+            for (let i = 0; i < bullets.length; i++) {
+                for (let j = 0; j < enemies.length; j++) {
+                    let bullet = bullets[i];
+                    let enemy = enemies[j];
+
+                    if (bullet.x < enemy.x + enemy.width &&
+                        bullet.x + bullet.width > enemy.x &&
+                        bullet.y < enemy.y + enemy.height &&
+                        bullet.y + bullet.height > enemy.y) {
+                        // Collision detected
+                        bullets.splice(i, 1);
+                        enemies.splice(j, 1);
+                        score += 10;  // Increase score
+                        document.querySelector('.score-board').textContent = 'Score: ' + score;
+                        i--;
+                        break;
+                    }
+                }
+            }
+
+            // Check for win condition
+            if (score >= 500 && !gameWon) {
+                gameWon = true;
+                document.querySelector('.you-win').style.display = 'block';
+                clearInterval(gameInterval); // Stop creating new enemies
+            }
+        }
+
+        // Draw Score
+        function drawScore() {
+            // The score is updated in the game loop, no need to draw it again
+        }
+
+        // Main Game Loop
+        function gameLoop() {
+            if (gameOver || gameWon) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            movePlayer();
+            moveBullets();
+            moveEnemies();
+            checkCollisions();
+
+            drawPlayer();
+            drawBullets();
+            drawEnemies();
+            drawScore();
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Restart the Game
+        function restartGame() {
+            initGame();
+        }
+
+        // Start the game
+        initGame();
+    </script>
+</body>
+</html>
