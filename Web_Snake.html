@@ -3,6 +3,7 @@
 <head>
   <title>Basic Snake HTML Game</title>
   <meta charset="UTF-8">
+  <link rel="stylesheet" type="text/css" href="refStyles.css">
   <style>
   html, body {
     height: 100%;
@@ -10,18 +11,42 @@
   }
 
   body {
-    background: black;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
+    flex-direction: column;
   }
   canvas {
     border: 1px solid white;
   }
+  button {
+    margin-bottom: 20px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #4CAF50; /* Green */
+    border: none;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    transition-duration: 0.4s;
+  }
+  button:hover {
+    background-color: white;
+    color: black;
+    border: 2px solid #4CAF50;
+  }
   </style>
 </head>
 <body>
+    <div class="title">
+        <h1>Snake Game</h1>
+        <h1>Use Arrow Keys to Move</h1>
+      </div>
 <canvas width="400" height="400" id="game"></canvas>
+<button id="quitButton">Quit</button>
 <script>
 var canvas = document.getElementById('game');
 var context = canvas.getContext('2d');
@@ -30,6 +55,10 @@ var context = canvas.getContext('2d');
 // (e.g. 16 * 25 = 400)
 var grid = 16;
 var count = 0;
+
+document.getElementById('quitButton').addEventListener('click', function() {
+  window.location.href = 'main.html';
+});
 
 var snake = {
   x: 160,
