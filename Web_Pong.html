@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Basic Pong HTML Game</title>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+
+    .title h1 {
+      font-size: 50px;
+    }
+
+    .title h2 {
+      font-size: 30px;
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-direction: column;
+    }
+
+    canvas {
+      border: 1px solid white;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      background-color: #4CAF50; /* Green */
+      border: none;
+      color: white;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      transition-duration: 0.4s;
+    }
+
+    button:hover {
+      background-color: white;
+      color: black;
+      border: 2px solid #4CAF50;
+    }
+  </style>
+</head>
+<body>
+  <div class="title">
+    <h1>Pong</h1>
+    <h2>Controls: Use W + S & arrow keys</h2>
+  </div>
+  <canvas width="750" height="585" id="game"></canvas>
+  <button id="quitButton">Quit</button>
+<script>
+const canvas = document.getElementById('game');
+const context = canvas.getContext('2d');
+const grid = 15;
+const paddleHeight = grid * 5; // 75
+const maxPaddleY = canvas.height - grid - paddleHeight;
+
+let paddleSpeed = 6;
+let ballSpeed = 5;
+let gameStarted = false;
+let score = 0;
+
+const leftPaddle = {
+  x: grid * 2,
+  y: canvas.height / 2 - paddleHeight / 2,
+  width: grid,
+  height: paddleHeight,
+  dy: 0
+};
+
+const rightPaddle = {
+  x: canvas.width - grid * 3,
+  y: canvas.height / 2 - paddleHeight / 2,
+  width: grid,
+  height: paddleHeight,
+  dy: 0
+};
+
+const ball = {
+  x: canvas.width / 2,
+  y: canvas.height / 2,
+  width: grid,
+  height: grid,
+  dx: ballSpeed,
+  dy: ballSpeed
+};
+
+document.getElementById('quitButton').addEventListener('click', function() {
+  window.location.href = 'main.html';
+});
+
+document.addEventListener('keydown', function(event) {
+  if (event.key === 'N' || event.key === 'n') {
+    startGame();
+  }
+
+  // Paddle movement
+  if (event.key === 'ArrowUp') {
+    rightPaddle.dy = -paddleSpeed;
+  } else if (event.key === 'ArrowDown') {
+    rightPaddle.dy = paddleSpeed;
+  }
+
+  if (event.key === 'w' || event.key === 'W') {
+    leftPaddle.dy = -paddleSpeed;
+  } else if (event.key === 's' || event.key === 'S') {
+    leftPaddle.dy = paddleSpeed;
+  }
+});
+
+document.addEventListener('keyup', function(event) {
+  if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+    rightPaddle.dy = 0;
+  }
+
+  if (event.key === 'w' || event.key === 'W' || event.key === 's' || event.key === 'S') {
+    leftPaddle.dy = 0;
+  }
+});
+
+function startGame() {
+  if (!gameStarted) {
+    gameStarted = true;
+    score = 0;
+    resetBall();
+    gameLoop();
+  }
+}
+
+function resetBall() {
+  ball.x = canvas.width / 2;
+  ball.y = canvas.height / 2;
+  ball.dx = ballSpeed;
+  ball.dy = ballSpeed;
+}
+
+function gameLoop() {
+  if (!gameStarted) return;
+
+  context.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Move paddles
+  leftPaddle.y += leftPaddle.dy;
+  rightPaddle.y += rightPaddle.dy;
+
+  // Prevent paddles from going out of bounds
+  if (leftPaddle.y < grid) {
+    leftPaddle.y = grid;
+  } else if (leftPaddle.y > maxPaddleY) {
+    leftPaddle.y = maxPaddleY;
+  }
+
+  if (rightPaddle.y < grid) {
+    rightPaddle.y = grid;
+  } else if (rightPaddle.y > maxPaddleY) {
+    rightPaddle.y = maxPaddleY;
+  }
+
+  // Move ball
+  ball.x += ball.dx;
+  ball.y += ball.dy;
+
+  // Ball collision with walls
+  if (ball.y < 0 || ball.y + ball.height > canvas.height) {
+    ball.dy *= -1;
+  }
+
+  // Ball collision with paddles
+  if (ball.x < leftPaddle.x + leftPaddle.width && ball.x + ball.width > leftPaddle.x && ball.y < leftPaddle.y + leftPaddle.height && ball.y + ball.height > leftPaddle.y) {
+    ball.dx *= -1;
+    score++;
+  }
+
+  if (ball.x < rightPaddle.x + rightPaddle.width && ball.x + ball.width > rightPaddle.x && ball.y < rightPaddle.y + rightPaddle.height && ball.y + ball.height > rightPaddle.y) {
+    ball.dx *= -1;
+    score++;
+  }
+
+  // Ball out of bounds
+  if (ball.x < 0 || ball.x + ball.width > canvas.width) {
+    gameStarted = false;
+    context.font = '30px Atari';
+    context.fillStyle = 'white';
+    context.fillText('Press N to start', canvas.width / 2 - 100, canvas.height / 2);
+    return;
+  }
+
+  // Draw paddles
+  context.fillStyle = 'white';
+  context.fillRect(leftPaddle.x, leftPaddle.y, leftPaddle.width, leftPaddle.height);
+  context.fillRect(rightPaddle.x, rightPaddle.y, rightPaddle.width, rightPaddle.height);
+
+  // Draw ball
+  context.fillStyle = 'white';
+  context.fillRect(ball.x, ball.y, ball.width, ball.height);
+
+  // Draw score
+  context.font = '20px Atari';
+  context.fillStyle = 'white';
+  context.fillText('Score: ' + score, 20, 30);
+
+  requestAnimationFrame(gameLoop);
+}
+
+// Initial prompt to start the game
+context.font = '30px Atari';
+context.fillStyle = 'white';
+context.fillText('Press N to start', canvas.width / 2 - 100, canvas.height / 2);
+</script>
+</body>
+</html>
