@@ -1,23 +1,27 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Basic Snake HTML Game</title>
+  <title>Snake</title>
   <meta charset="UTF-8">
-  <link rel="stylesheet" type="text/css" href="refStyles.css">
+  <link rel="stylesheet" type="text/css" href="genStyles.css">
   <style>
   html, body {
     height: 100%;
     margin: 0;
+	position: center;
   }
-
   body {
     display: flex;
     align-items: center;
     justify-content: space-between;
     flex-direction: column;
+	position: center;
   }
   canvas {
     border: 1px solid white;
+	margin: 20px auto;
+	position: center;
+	
   }
   button {
     margin-bottom: 20px;
@@ -29,7 +33,7 @@
     color: white;
     text-align: center;
     text-decoration: none;
-    display: inline-block;
+    display: none;
     font-size: 16px;
     transition-duration: 0.4s;
   }
@@ -38,15 +42,25 @@
     color: black;
     border: 2px solid #4CAF50;
   }
+  box{
+	margin: 20px auto;
+	height: 45px;
+  }
   </style>
 </head>
 <body>
     <div class="title">
         <h1>Snake Game</h1>
-        <h1>Use Arrow Keys to Move</h1>
       </div>
+	  <div class="keybinds">
+        <strong>Keybinds:</strong><br>
+        <strong>Move:</strong>Arrow Keys<br>
+		<strong>Move:</strong>W A S D<br>
+    </div>
 <canvas width="400" height="400" id="game"></canvas>
+<div class="home-button" onclick="window.location.href='main.html'">Home</div>
 <button id="quitButton">Quit</button>
+<div class="box"></div>
 <script>
 var canvas = document.getElementById('game');
 var context = canvas.getContext('2d');
@@ -171,26 +185,27 @@ document.addEventListener('keydown', function(e) {
   // left won't do anything, and pressing right while moving left
   // shouldn't let you collide with your own body)
 
-  // left arrow key
-  if (e.which === 37 && snake.dx === 0) {
-    snake.dx = -grid;
-    snake.dy = 0;
-  }
-  // up arrow key
-  else if (e.which === 38 && snake.dy === 0) {
-    snake.dy = -grid;
-    snake.dx = 0;
-  }
-  // right arrow key
-  else if (e.which === 39 && snake.dx === 0) {
-    snake.dx = grid;
-    snake.dy = 0;
-  }
-  // down arrow key
-  else if (e.which === 40 && snake.dy === 0) {
-    snake.dy = grid;
-    snake.dx = 0;
-  }
+  // left arrow key or 'A' key
+if ((e.which === 37 || e.which === 65) && snake.dx === 0) {
+  snake.dx = -grid;
+  snake.dy = 0;
+}
+// up arrow key or 'W' key
+else if ((e.which === 38 || e.which === 87) && snake.dy === 0) {
+  snake.dy = -grid;
+  snake.dx = 0;
+}
+// right arrow key or 'D' key
+else if ((e.which === 39 || e.which === 68) && snake.dx === 0) {
+  snake.dx = grid;
+  snake.dy = 0;
+}
+// down arrow key or 'S' key
+else if ((e.which === 40 || e.which === 83) && snake.dy === 0) {
+  snake.dy = grid;
+  snake.dx = 0;
+}
+
 });
 
 // start the game

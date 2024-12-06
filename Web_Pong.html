@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Basic Pong HTML Game</title>
+  <title>Pong</title>
   <meta charset="UTF-8">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="genStyles.css">
   <style>
     html, body {
       height: 100%;
@@ -39,7 +39,7 @@
       color: white;
       text-align: center;
       text-decoration: none;
-      display: inline-block;
+      display: none;
       font-size: 16px;
       transition-duration: 0.4s;
     }
@@ -49,15 +49,25 @@
       color: black;
       border: 2px solid #4CAF50;
     }
+	box{
+		margin: 20px auto;
+		height: 45px;
+	}
   </style>
 </head>
 <body>
   <div class="title">
     <h1>Pong</h1>
-    <h2>Controls: Use W + S & arrow keys</h2>
   </div>
+  <div class="keybinds">
+        <strong>Keybinds:</strong><br>
+        <strong>Player 1:</strong> W & S<br>
+		<strong>Player 2:</strong> W A S D<br>
+    </div>
   <canvas width="750" height="585" id="game"></canvas>
   <button id="quitButton">Quit</button>
+  <div class="home-button" onclick="window.location.href='main.html'">Home</div>
+  <div class="box"></div>
 <script>
 const canvas = document.getElementById('game');
 const context = canvas.getContext('2d');
